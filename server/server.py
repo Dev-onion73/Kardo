@@ -17,11 +17,10 @@ os.chdir(script_dir)
 # custom modules
 import modules.dbmanage as dbm
 import modules.security as sec
-import modules.utilities as util
+# import modules.utilities as util
 
-from modules.reminder import trigger_daily
-from modules.utilities import apitools
-from modules.caching import *
+# from modules.utilities import apitools
+# from modules.caching import *
 
 # Database objects
 uobj = dbm.users()
@@ -59,22 +58,22 @@ def jwt_role():
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    username = data.get('username', '').strip()
+    email = data.get('email', '').strip()
     password = data.get('password', '').strip()
 
-    if not username or not password:
-        return jsonify({"error": "Username and password required"}), 400
+    if not email or not password:
+        return jsonify({"error": "email and password required"}), 400
 
-    valid = sec.verify_login(username, password)
+    valid = sec.verify_login(email, password)
     if not valid[0]:
         if valid[1] == "usr":
-            return jsonify({"error": "Username does not exist"}), 404
+            return jsonify({"error": "email does not exist"}), 404
         else:
             return jsonify({"error": "Wrong password"}), 401
     else:
-        role = dbm.get_role(username)
+        role = dbm.get_role(email)
         atok = create_access_token(
-            identity=username,
+            identity=email,
             additional_claims={"role": role}
         )
         return jsonify({

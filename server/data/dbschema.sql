@@ -8,6 +8,8 @@ CREATE TABLE users (
     full_name      VARCHAR(100) NOT NULL,
     phone_number   VARCHAR(15) UNIQUE NOT NULL,
     email          VARCHAR(100) UNIQUE NOT NULL,
+    password       TEXT NOT NULL,  -- store hashed password
+    role           TEXT NOT NULL CHECK (role IN ('admin', 'customer', 'vendor')),
     registered_on  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
