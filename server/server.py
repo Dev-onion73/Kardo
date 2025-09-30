@@ -57,11 +57,12 @@ def login():
     data = request.get_json()
     email = data.get('email', '').strip()
     password = data.get('password', '').strip()
+    login_type = data.get('type','user').strip()
 
     if not email or not password:
         return jsonify({"error": "email and password required"}), 400
 
-    valid = sec.verify_login(email, password)
+    valid = sec.verify_login(email, password, login_type)
     if not valid[0]:
         if valid[1] == "usr":
             return jsonify({"error": "email does not exist"}), 404

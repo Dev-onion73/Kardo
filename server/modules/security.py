@@ -60,9 +60,12 @@ def hashpwd(password):
 def verify_hash(password, pwdhash):
     return hashpwd(password) == pwdhash
 
-def verify_login(usermail,enteredpwd):
-    from modules.dbmanage import users
-    obj = users()
+def verify_login(usermail,enteredpwd,login_type):
+    from modules.dbmanage import users,vendors 
+    if login_type == 'vendor':
+        obj = vendors()
+    else :
+        obj = users()
     user = obj.search(email=usermail)
     if  user != None:
         if verify_hash(enteredpwd,user["pwd"]):

@@ -19,7 +19,7 @@ class users:
         """
         with sqlite3.connect("data/instance.db") as con:
             try:
-                full_name, phone, email, password, role = [u.strip() for u in user]
+                full_name, phone, email, password = [u.strip() for u in user]
                 hashed = hashpwd(password)
                 cur = con.cursor()
                 cur.execute(
@@ -114,22 +114,25 @@ class users:
                 print("Admin user already exists")
 
 
+
 class vendors:
     def add(self, vendor):
         """
-        vendor = [business_name, category, contact_email, contact_phone]
+        vendor = [business_name, category, contact_email, contact_phone, password]
         """
         with sqlite3.connect("data/instance.db") as con:
             try:
-                business_name, category, contact_email, contact_phone = [
+                business_name, category, contact_email, contact_phone, password = [
                     v.strip() if isinstance(v, str) else v for v in vendor
                 ]
+                hashed = hashpwd(password)
+
                 cur = con.cursor()
                 cur.execute(
                     '''INSERT INTO businesses 
-                       (business_name, category, contact_email, contact_phone) 
-                       VALUES (?, ?, ?, ?)''',
-                    (business_name, category, contact_email, contact_phone)
+                       (business_name, category, contact_email, contact_phone, password) 
+                       VALUES (?, ?, ?, ?, ?)''',
+                    (business_name, category, contact_email, contact_phone, hashed)
                 )
                 con.commit()
                 print(f"Added Business: {business_name}")
@@ -144,14 +147,14 @@ class vendors:
             if business_id is None:
                 cur.execute(
                     '''SELECT business_id, business_name, category, 
-                              contact_email, contact_phone, joined_on
+                              contact_email, contact_phone, joined_on 
                        FROM businesses'''
                 )
                 return cur.fetchall()
             else:
                 cur.execute(
                     '''SELECT business_id, business_name, category, 
-                              contact_email, contact_phone, joined_on
+                              contact_email, contact_phone, joined_on 
                        FROM businesses WHERE business_id = ?''',
                     (business_id,)
                 )
@@ -163,19 +166,19 @@ class vendors:
             if name:
                 cur.execute(
                     '''SELECT business_id, business_name, category, 
-                              contact_email, contact_phone, joined_on
+                              contact_email, contact_phone, password, joined_on 
                        FROM businesses WHERE business_name = ?''', (name,)
                 )
             elif email:
                 cur.execute(
                     '''SELECT business_id, business_name, category, 
-                              contact_email, contact_phone, joined_on
+                              contact_email, contact_phone, password, joined_on 
                        FROM businesses WHERE contact_email = ?''', (email,)
                 )
             elif phone:
                 cur.execute(
                     '''SELECT business_id, business_name, category, 
-                              contact_email, contact_phone, joined_on
+                              contact_email, contact_phone, password, joined_on 
                        FROM businesses WHERE contact_phone = ?''', (phone,)
                 )
             else:
@@ -183,17 +186,18 @@ class vendors:
 
             vendor = cur.fetchone()
             if vendor:
-                print(f"Business found: ID={vendor[0]}, Name={vendor[1]}")
+                print(f"Vendor found: ID={vendor[0]}, Name={vendor[1]}")
                 return {
                     "id": vendor[0],
                     "business_name": vendor[1],
                     "category": vendor[2],
                     "contact_email": vendor[3],
                     "contact_phone": vendor[4],
-                    "joined_on": vendor[5]
+                    "pwd": vendor[5],
+                    "joined_on": vendor[6]
                 }
             else:
-                print("Business not found.")
+                print("Vendor not found.")
                 return None
 
     def remove(self, business_id):
@@ -202,7 +206,7 @@ class vendors:
                 cur = con.cursor()
                 cur.execute("DELETE FROM businesses WHERE business_id = ?", (business_id,))
                 con.commit()
-                print("Business deleted successfully.")
+                print(f"Vendor ID {business_id} deleted successfully.")
                 return True
             except Exception as e:
                 print("Exception: " + str(e))

@@ -20,6 +20,7 @@ CREATE TABLE businesses (
     category       VARCHAR(100),
     contact_email  VARCHAR(100),
     contact_phone  VARCHAR(15),
+    password TEXT NOT NULL,
     joined_on      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
