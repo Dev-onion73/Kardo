@@ -1,4 +1,1 @@
-__pycache__/
-.venv/
-instance.db
-admin_lock.pkl
+__pycache__

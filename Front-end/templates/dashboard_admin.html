@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">Admin Dashboard</h2>
+
+<h4>Users</h4>
+<div class="table-responsive">
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th><th>Name</th><th>Email</th><th>Role</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.full_name }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.role }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<h4>Businesses</h4>
+<div class="table-responsive">
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th><th>Name</th><th>Email</th><th>Category</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in businesses %}
+        <tr>
+            <td>{{ b.id }}</td>
+            <td>{{ b.name }}</td>
+            <td>{{ b.contact_email }}</td>
+            <td>{{ b.category }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<h4>Transactions</h4>
+<div class="table-responsive">
+<table class="table table-striped table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th><th>Customer</th><th>Business</th><th>Points Earned</th><th>Points Redeemed</th><th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in transactions %}
+        <tr>
+            <td>{{ t.transaction_id }}</td>
+            <td>{{ t.customer_name }}</td>
+            <td>{{ t.business_name }}</td>
+            <td>{{ t.points_earned }}</td>
+            <td>{{ t.points_redeemed }}</td>
+            <td>{{ t.description }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}
