@@ -89,25 +89,16 @@ pip install -r requirements.txt
 
 ```
 
-### 4. Initialize Database
 
-```bash
-python
->>> from models import db
->>> from server import app
->>> with app.app_context():
-...     db.create_all()
-
-```
-
-### 5. Run Backend Server
+### 4. Run Backend Server (localhost:5000)
 
 ```bash
 python server.py
 
 ```
 
-### 6. Run Frontend Server
+
+### 5. Run Frontend Server (localhost:5001)
 
 ```bash
 cd Front-end
