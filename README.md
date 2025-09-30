@@ -203,9 +203,6 @@ The frontend is a Flask app serving HTML templates using Bootstrap:
 
 ![Business Registration](images/vendor_register.png)
 
-----------
-Perfect — let’s document the **API JSON request/response examples** for each role (Admin, Business, Customer).  
-This will give you a clear **frontend contract** to work against.
 
 ----------
 
