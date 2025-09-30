@@ -29,7 +29,7 @@ This project implements a **multi-role loyalty card management system** using **
 
 ### Database Schema Diagram
 
-![Database Schema](images/schema.png)
+![Database Schema](,images/Schema.png)
 
 ---
 
