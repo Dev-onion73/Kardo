@@ -1,13 +1,6 @@
 # Kardo
 A unified multi-tenant membership management system where users access multiple businesses with a single physical or digital card. Supports tiered memberships, reward points, transactions, and cross-business access. Scalable design for merchants, simple unified experience for customers.
 
-
-Absolutely! You can add an **image of your database schema** to the README using Markdown syntax. Here’s how I would modify your README to include an optional schema image section:
-
----
-
-## Overview
-
 This project implements a **multi-role loyalty card management system** using **Flask** and **SQLite**, providing a central platform to manage universal loyalty cards, merchants, and user transactions. The system supports **three types of logins**:
 
 1. **Users** – Cardholders who can view their transaction history and points balances. *(Dashboard / features: To Do)*
@@ -15,6 +8,11 @@ This project implements a **multi-role loyalty card management system** using **
 3. **Admin** – Superuser who can manage vendors, view system statistics, and oversee the platform.
 
 ---
+## Notes
+
+* The system currently supports **database connection and login functionality** for all roles.
+* **User dashboards, admin statistics, and vendor analytics** are planned features (TODO).
+
 
 ## Features
 
@@ -102,10 +100,3 @@ pip install -r requirements.txt
 }
 ```
 
----
-
-## Notes
-
-* The system currently supports **database connection and login functionality** for all roles.
-* **User dashboards, admin statistics, and vendor analytics** are planned features (TODO).
-* Admin user is created with `user_id = 0` during initial setup and cannot be deleted.
