@@ -15,7 +15,7 @@ def get_role(email):
 class users:
     def add(self, user):
         """
-        user = [full_name, phone_number, email, password, role]
+        user = [full_name, phone_number, email, password ]
         """
         with sqlite3.connect("data/instance.db") as con:
             try:
@@ -23,9 +23,9 @@ class users:
                 hashed = hashpwd(password)
                 cur = con.cursor()
                 cur.execute(
-                    '''INSERT INTO users (full_name, phone_number, email, password, role) 
-                       VALUES (?, ?, ?, ?, ?)''',
-                    (full_name, phone, email, hashed, role)
+                    '''INSERT INTO users (full_name, phone_number, email, password) 
+                       VALUES (?, ?, ?, ?)''',
+                    (full_name, phone, email, hashed)
                 )
                 con.commit()
                 print(f"Added User: {full_name} ({role})")
@@ -112,3 +112,98 @@ class users:
                 print("Admin user created with user_id=0")
             else:
                 print("Admin user already exists")
+
+
+class vendors:
+    def add(self, vendor):
+        """
+        vendor = [business_name, category, contact_email, contact_phone]
+        """
+        with sqlite3.connect("data/instance.db") as con:
+            try:
+                business_name, category, contact_email, contact_phone = [
+                    v.strip() if isinstance(v, str) else v for v in vendor
+                ]
+                cur = con.cursor()
+                cur.execute(
+                    '''INSERT INTO businesses 
+                       (business_name, category, contact_email, contact_phone) 
+                       VALUES (?, ?, ?, ?)''',
+                    (business_name, category, contact_email, contact_phone)
+                )
+                con.commit()
+                print(f"Added Business: {business_name}")
+                return True
+            except Exception as e:
+                print("Exception: " + str(e))
+                return False
+
+    def get(self, business_id=None):
+        with sqlite3.connect("data/instance.db") as con:
+            cur = con.cursor()
+            if business_id is None:
+                cur.execute(
+                    '''SELECT business_id, business_name, category, 
+                              contact_email, contact_phone, joined_on
+                       FROM businesses'''
+                )
+                return cur.fetchall()
+            else:
+                cur.execute(
+                    '''SELECT business_id, business_name, category, 
+                              contact_email, contact_phone, joined_on
+                       FROM businesses WHERE business_id = ?''',
+                    (business_id,)
+                )
+                return cur.fetchone()
+
+    def search(self, name=None, email=None, phone=None):
+        with sqlite3.connect("data/instance.db") as con:
+            cur = con.cursor()
+            if name:
+                cur.execute(
+                    '''SELECT business_id, business_name, category, 
+                              contact_email, contact_phone, joined_on
+                       FROM businesses WHERE business_name = ?''', (name,)
+                )
+            elif email:
+                cur.execute(
+                    '''SELECT business_id, business_name, category, 
+                              contact_email, contact_phone, joined_on
+                       FROM businesses WHERE contact_email = ?''', (email,)
+                )
+            elif phone:
+                cur.execute(
+                    '''SELECT business_id, business_name, category, 
+                              contact_email, contact_phone, joined_on
+                       FROM businesses WHERE contact_phone = ?''', (phone,)
+                )
+            else:
+                return None
+
+            vendor = cur.fetchone()
+            if vendor:
+                print(f"Business found: ID={vendor[0]}, Name={vendor[1]}")
+                return {
+                    "id": vendor[0],
+                    "business_name": vendor[1],
+                    "category": vendor[2],
+                    "contact_email": vendor[3],
+                    "contact_phone": vendor[4],
+                    "joined_on": vendor[5]
+                }
+            else:
+                print("Business not found.")
+                return None
+
+    def remove(self, business_id):
+        with sqlite3.connect("data/instance.db") as con:
+            try:
+                cur = con.cursor()
+                cur.execute("DELETE FROM businesses WHERE business_id = ?", (business_id,))
+                con.commit()
+                print("Business deleted successfully.")
+                return True
+            except Exception as e:
+                print("Exception: " + str(e))
+                return False

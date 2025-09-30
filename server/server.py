@@ -17,14 +17,11 @@ os.chdir(script_dir)
 # custom modules
 import modules.dbmanage as dbm
 import modules.security as sec
-# import modules.utilities as util
-
-# from modules.utilities import apitools
-# from modules.caching import *
+import modules.utilities as util
 
 # Database objects
 uobj = dbm.users()
-
+vobj = dbm.vendors()
 
 ######## START
 
@@ -82,27 +79,50 @@ def login():
         }), 200
 
 
-@app.route("/register", methods=["POST"])
-def register():
+@app.route("/register/user", methods=["POST"])
+def register_user():
     data = request.get_json()
-    username = data.get("username", "").strip()
+    email = data.get("email", "").strip()
     password = data.get("password", "").strip()
     fullname = data.get("fullname", "").strip()
-    qualification = data.get("qualification", "").strip()
-    dob = data.get("dob", "").strip()
+    phone = data.get("phone", "").strip()
 
-    if not util.valid_mail(username):
+    if not util.valid_mail(email):
         return jsonify({"error": "Invalid email format"}), 400
 
-    if not all([username, password, fullname, qualification, dob]):
+    if not all([email, password, fullname, phone]):
         return jsonify({"error": "All fields are required"}), 400
 
-    user_data = [username, password, fullname, qualification, dob]
+    user_data = [fullname, phone, email, password]
 
     if uobj.add(user_data):
         return jsonify({"message": "Registration successful"}), 201
     else:
-        return jsonify({"error": f"Username {username} already exists"}), 409
+        return jsonify({"error": f"email {email} already exists"}), 409
+
+
+@app.route("/register/vendor", methods=["POST"])
+def register_vendor():
+    data = request.get_json()
+    business_name = data.get("business_name", "").strip()
+    category = data.get("category", "").strip()
+    contact_email = data.get("contact_email", "").strip()
+    contact_phone = data.get("contact_phone", "").strip()
+
+    # Validation
+    if not all([business_name, contact_email, contact_phone]):
+        return jsonify({"error": "Business name, email, and phone are required"}), 400
+
+    if not util.valid_mail(contact_email):
+        return jsonify({"error": "Invalid email format"}), 400
+
+    vendor_data = [business_name, category, contact_email, contact_phone]
+
+    if vobj.add(vendor_data):  # Vendor class instance (like uobj for Users)
+        return jsonify({"message": "Vendor registration successful"}), 201
+    else:
+        return jsonify({"error": f"Vendor with email {contact_email} already exists"}), 409
+
 
 
 

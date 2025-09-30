@@ -9,7 +9,7 @@ CREATE TABLE users (
     phone_number   VARCHAR(15) UNIQUE NOT NULL,
     email          VARCHAR(100) UNIQUE NOT NULL,
     password       TEXT NOT NULL,  -- store hashed password
-    role           TEXT NOT NULL CHECK (role IN ('admin', 'customer', 'vendor')),
+    role           TEXT NOT NULL CHECK (role IN ('admin', 'user')) NOT NULL DEFAULT 'user',
     registered_on  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
