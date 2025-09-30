@@ -68,7 +68,7 @@ Kardo/
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone [<repository-url>](https://github.com/Dev-onion73/Kardo.git)
 cd Kardo
 
 ```
