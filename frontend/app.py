@@ -24,7 +24,7 @@ def login():
             if role == "admin":
                 return redirect(url_for("admin_dashboard"))
             else:
-                return redirect(url_for(dashboard))
+                return redirect(url_for("dashboard"))
         else:
             flash(resp.json().get("error", "Login failed"))
 
@@ -277,6 +277,18 @@ def handle_delete_business_admin():
 
     return redirect(url_for("admin_businesses"))
 
+
+@app.route("/admin/transactions")
+def admin_transactions():
+    token = session.get("token")
+    role = session.get("role")
+    if not token:
+        return redirect(url_for("login"))
+
+    headers = {"Authorization": f"Bearer {token}"}
+    transactions = requests.get(API_URL + "/admin/transactions", headers=headers).json()
+    return render_template("admin/transactions.html",transactions=transactions)
+
 @app.route("/dashboard")
 def dashboard():
     token = session.get("token")
@@ -299,6 +311,8 @@ def dashboard():
     else:
         flash("Invalid role")
         return redirect(url_for("login"))
+
+
 
 
 # -------- REGISTRATION PAGES --------
