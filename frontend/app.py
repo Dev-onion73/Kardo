@@ -34,7 +34,7 @@ def login():
 # -------- DASHBOARD ROUTE --------
 @app.route("/admin")
 def admin_dashboard():
-    return render_template("admin/dash.html")
+    return render_template("dashboard/admin.html")
 
 @app.route("/admin/users")
 def admin_users():
@@ -289,12 +289,12 @@ def dashboard():
     if role == "business":
         memberships = requests.get(API_URL + "/business/memberships", headers=headers).json()
         transactions = requests.get(API_URL + "/business/transactions", headers=headers).json()
-        return render_template("dashboard_business.html", memberships=memberships, transactions=transactions)
+        return render_template("dashboard/business.html", memberships=memberships, transactions=transactions)
 
     elif role == "customer":
         memberships = requests.get(API_URL + "/customer/memberships", headers=headers).json()
         transactions = requests.get(API_URL + "/customer/transactions", headers=headers).json()
-        return render_template("dashboard_customer.html", memberships=memberships, transactions=transactions)
+        return render_template("dashboard/customer.html", memberships=memberships, transactions=transactions)
 
     else:
         flash("Invalid role")
@@ -316,7 +316,7 @@ def register_customer():
             return redirect(url_for("login"))
         else:
             flash(resp.json().get("error", "Registration failed"))
-    return render_template("register_customer.html")
+    return render_template("register/customer.html")
 
 
 @app.route("/register/business", methods=["GET", "POST"])
@@ -335,7 +335,7 @@ def register_business():
             return redirect(url_for("login"))
         else:
             flash(resp.json().get("error", "Registration failed"))
-    return render_template("register_business.html")
+    return render_template("register/business.html")
 
 
 # -------- LOGOUT --------
