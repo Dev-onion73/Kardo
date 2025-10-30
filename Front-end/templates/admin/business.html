@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Businesses</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Removed HTMX script -->
+</head>
+<body>
+    <div class="blur"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #3b4f61;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin">Membership Dashboard</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/admin/users">Users</a>
+                <a class="nav-link active" href="/admin/businesses">Businesses</a> <!-- Active tab -->
+                <a class="nav-link" href="/admin/transactions">Transactions</a>
+            </div>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" style="color: white;">
+                        Admin
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main_cont">
+        {% include 'extra/response.html' %}
+        <div class="container mt-5 pt-5">
+            <!-- List Businesses Section -->
+            <div class="card mb-4 justify-content-center shadow-lg rounded-4 d-flex">
+                <h3 class="mt-4" style="margin: auto;">Business List</h3>
+                <div class="justify-content-center" style="padding: 1%;">
+                    {% if businesses %}
+                        {% for business in businesses %}
+                        <details class="card mt-2 mb-2">
+                            <summary>{{ business.name }} ({{ business.contact_email }})</summary>
+                            <div style="padding-left: 2%;">
+                                <p><strong>ID:</strong> {{ business.id }}</p>
+                                <p><strong>Name:</strong> {{ business.name }}</p>
+                                <p><strong>Category:</strong> {{ business.category or 'N/A' }}</p>
+                                <p><strong>Contact Email:</strong> {{ business.contact_email }}</p>
+                                <p><strong>Contact Phone:</strong> {{ business.contact_phone or 'N/A' }}</p>
+                                <p><strong>Joined On:</strong> {{ business.joined_on.strftime('%Y-%m-%d %H:%M:%S') if business.joined_on else 'N/A' }}</p>
+                                <!-- Add more business-specific fields here -->
+                            </div>
+                        </details>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center">No businesses to display</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Add Business Section -->
+            <div class="card mb-4 shadow-lg rounded-4 d-flex">
+                <h3 class="mt-4" style="margin: auto;">Add Business</h3>
+                <div class="justify-content-center" style="padding: 1%;">
+                    <form action="/admin/businesses/add" method="post"> <!-- Updated route -->
+                        <input class="form-control mt-3" type="text" name="name" placeholder="Business Name" required>
+                        <input class="form-control mt-3" type="text" name="category" placeholder="Category (Optional)">
+                        <input class="form-control mt-3" id="contact_email" type="email" name="contact_email" placeholder="Contact Email" required>
+                        <input class="form-control mt-3" type="tel" name="contact_phone" placeholder="Contact Phone (Optional)">
+                        <input class="form-control mt-3" type="password" name="password" placeholder="Password" required>
+                        <!-- Add other relevant fields -->
+                        <button class="mt-3 mb-3 btn submit-btn" type="submit">Add Business</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Delete Business Section -->
+            <div class="card mb-4 shadow-lg rounded-4 d-flex">
+                <h3 class="mt-4" style="margin: auto;">Delete Business</h3>
+                <div class="justify-content-center" style="padding: 1%;">
+                    <form action="/admin/businesses/delete" method="post" onsubmit="return confirmDelete();"> <!-- Updated route -->
+                        <select name="business_id" class="form-control mt-3" required>
+                            <option value="">Select Business to Delete</option>
+                            {% for business in businesses %}
+                                <option value="{{ business.id }}">{{ business.name }} ({{ business.contact_email }})</option>
+                            {% endfor %}
+                        </select>
+                        <button class="submit-btn mt-3 mb-3 btn" type="submit">Delete Selected Business</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function confirmDelete() {
+            return confirm("Are you sure you want to delete the selected business? This action cannot be undone and will also delete associated memberships and transactions.");
+        }
+    </script>
+</body>
+</html>

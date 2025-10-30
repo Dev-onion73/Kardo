@@ -64,7 +64,7 @@ def add_user():
 
 
     # Prepare API call
-    api_url = f"{API_URL}/admin/users" # Replace API_BASE_URL with your actual base URL
+    api_url = f"{API_URL}/admin/users" # Replace API_URL with your actual base URL
     token = session.get("token")
     role = session.get("role")
     if not token:
@@ -89,6 +89,7 @@ def add_user():
         flash(f"An error occurred while contacting the API: {str(e)}", "error")
 
     return redirect(url_for("admin_users"))
+
 
 @app.route('/admin/users/delete', methods=["POST"])
 def handle_delete_user_admin():
@@ -155,6 +156,126 @@ def handle_delete_user_admin():
     return redirect(url_for("admin_users"))
 
 
+@app.route("/admin/businesses")
+def admin_businesses():
+    token = session.get("token")
+    role = session.get("role")
+    if not token:
+        return redirect(url_for("login"))
+
+    headers = {"Authorization": f"Bearer {token}"}
+    businesses = requests.get(API_URL + "/admin/businesses", headers=headers).json()
+    return render_template("admin/business.html",businesses=businesses)
+
+@app.route('/admin/businesses/add', methods=["POST"])
+def handle_add_business_admin():
+    """
+    Handles the form submission from the admin businesses page to add a business.
+    Makes an API call to the backend.
+    """
+    form_data = {
+        "name": request.form.get('name', '').strip(),
+        "category": request.form.get('category', '').strip(), # Optional field
+        "contact_email": request.form.get('contact_email', '').strip(),
+        "contact_phone": request.form.get('contact_phone', '').strip(), # Optional field
+        "password": request.form.get('password', '').strip(),
+    }
+
+    # Validate required fields
+    if not form_data["name"] or not form_data["contact_email"] or not form_data["password"]:
+        flash("Input Error: Name, Contact Email, and Password are required.", "info")
+        return redirect(url_for("admin_businesses")) # Assuming this route calls render_admin_businesses_page
+
+    api_url = f"{API_URL}/admin/businesses" # Use the API endpoint that handles POST for adding
+    token = session.get("token")
+    role = session.get("role")
+    if not token:
+        return redirect(url_for("login"))
+
+    headers = {
+        'Content-Type': 'application/json',
+        "Authorization": f"Bearer {token}"
+    }
+
+    json_payload = form_data
+
+    try:
+        response = requests.post(api_url, json=json_payload, headers=headers)
+
+        if response.status_code == 201:
+            flash(f"Business '{form_data['name']}' added successfully!", "success")
+        elif response.status_code == 409:
+            api_error = response.json().get('error', 'Business already exists.')
+            flash(f"Error: {api_error}", "error")
+        elif response.status_code == 400:
+            api_error = response.json().get('error', 'Invalid data provided.')
+            flash(f"Error: {api_error}", "error")
+        else:
+            try:
+                api_error_detail = response.json().get('error', 'Unknown error from API.')
+            except ValueError:
+                api_error_detail = f"Non-JSON response: {response.text[:100]}..."
+            flash(f"Failed to add business. API Error: {api_error_detail}", "error")
+
+    except requests.exceptions.RequestException as e:
+        flash(f"An error occurred while contacting the API: {str(e)}", "error")
+
+    return redirect(url_for("admin_businesses"))
+
+
+
+# --- Frontend Handler for Deleting Business ---
+
+@app.route('/admin/businesses/delete', methods=["POST"])
+def handle_delete_business_admin():
+    """
+    Handles the form submission from the admin businesses page to delete a business.
+    Makes an API call to the backend.
+    """
+    business_id_str = request.form.get('business_id')
+
+    if not business_id_str:
+        flash("Error: No business selected for deletion.", "error")
+        return redirect(url_for("admin_businesses"))
+
+    try:
+        business_id = int(business_id_str)
+    except ValueError:
+        flash("Error: Invalid business ID format.", "error")
+        return redirect(url_for("admin_businesses"))
+
+    api_url = f"{API_URL}/admin/businesses/delete" # Use the API endpoint that handles POST for deletion
+    token = session.get("token")
+    role = session.get("role")
+    if not token:
+        return redirect(url_for("login"))
+
+    headers = {
+        'Content-Type': 'application/json',
+        "Authorization": f"Bearer {token}"
+    }
+
+    json_payload = {"business_id": business_id}
+
+    try:
+        response = requests.post(api_url, json=json_payload, headers=headers)
+
+        if response.status_code == 200:
+            flash("Business deleted successfully!", "success")
+        elif response.status_code == 404:
+            api_error = response.json().get('error', 'Business not found.')
+            flash(f"Error: {api_error}", "error")
+        else:
+            try:
+                api_error_detail = response.json().get('error', 'Unknown error from API.')
+            except ValueError:
+                api_error_detail = f"Non-JSON response: {response.text[:100]}..."
+            flash(f"Failed to delete business. API Error: {api_error_detail}", "error")
+
+    except requests.exceptions.RequestException as e:
+        flash(f"An error occurred while contacting the API: {str(e)}", "error")
+
+    return redirect(url_for("admin_businesses"))
 
 @app.route("/dashboard")
 def dashboard():

@@ -129,14 +129,31 @@ def add_business():
     db.session.commit()
     return jsonify({"message": "Business added"}), 201
 
-@admin_bp.route("/businesses/<int:business_id>", methods=["DELETE"])
+@admin_bp.route("/businesses/delete", methods=["POST"])
 @admin_required
-def delete_business(business_id):
+def delete_business():
+    # Get JSON data from the request body
+    data = request.get_json()
+
+    # Check if JSON body exists and contains 'business_id'
+    if not data or 'business_id' not in data:
+        return jsonify({"error": "Missing 'business_id' in JSON body"}), 400
+
+    business_id = data.get('business_id')
+
+    # Validate business_id type if necessary (ensure it's an integer)
+    try:
+        business_id = int(business_id)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid 'business_id' type, must be an integer"}), 400
+
+    # Query the database for the business using the ID from the JSON body
     business = Business.query.get(business_id)
     if not business:
         return jsonify({"error": "Business not found"}), 404
     db.session.delete(business)
     db.session.commit()
+
     return jsonify({"message": "Business deleted"}), 200
 
 # Admin adjust points
