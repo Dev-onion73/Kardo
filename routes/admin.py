@@ -61,17 +61,38 @@ def add_user():
         "card_number": card_number
     }), 201
 
-@admin_bp.route("/users/<int:user_id>", methods=["DELETE"])
+@admin_bp.route("/users/delete", methods=["POST"])
 @admin_required
-def delete_user(user_id):
+def delete_user():
+    # Get JSON data from the request body
+    data = request.get_json()
+
+    # Check if JSON body exists and contains 'user_id'
+    if not data or 'user_id' not in data:
+        return jsonify({"error": "Missing 'user_id' in JSON body"}), 400
+
+    user_id = data.get('user_id')
+    print(user_id)
+
+    try:
+        user_id = int(user_id)
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid 'user_id' type, must be an integer"}), 400
+
+    # Query the database for the user using the ID from the JSON body
     user = User.query.get(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
+
     if user.role == "admin":
         return jsonify({"error": "Cannot delete admin"}), 403
+
+    # Perform the deletion
     db.session.delete(user)
     db.session.commit()
+
     return jsonify({"message": "User deleted"}), 200
+
 
 # Businesses
 @admin_bp.route("/businesses", methods=["GET"])

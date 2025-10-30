@@ -21,7 +21,10 @@ def login():
         if resp.status_code == 200:
             session["token"] = resp.json()["token"]
             session["role"] = role
-            return redirect(url_for("dashboard"))
+            if role == "admin":
+                return redirect(url_for("admin_dashboard"))
+            else:
+                return redirect(url_for(dashboard))
         else:
             flash(resp.json().get("error", "Login failed"))
 
@@ -29,6 +32,130 @@ def login():
 
 
 # -------- DASHBOARD ROUTE --------
+@app.route("/admin")
+def admin_dashboard():
+    return render_template("admin/dash.html")
+
+@app.route("/admin/users")
+def admin_users():
+    token = session.get("token")
+    role = session.get("role")
+    if not token:
+        return redirect(url_for("login"))
+
+    headers = {"Authorization": f"Bearer {token}"}
+    users = requests.get(API_URL + "/admin/users", headers=headers).json()
+    return render_template("admin/users.html",users=users)
+
+
+@app.route('/admin/users/add', methods=["POST"])
+def add_user():
+    form_data = {
+        "full_name": request.form.get('full_name', '').strip(),
+        "email": request.form.get('email', '').strip(),
+        "password": request.form.get('password', '').strip(),
+        "role": request.form.get('role', 'customer').strip()
+    }
+
+    for value in form_data.values():
+        if not value:
+            flash("Input Error: All fields are required.", "info")
+            return redirect(url_for("admin_users")) # Assuming the users page route is 'admin_users'
+
+
+    # Prepare API call
+    api_url = f"{API_URL}/admin/users" # Replace API_BASE_URL with your actual base URL
+    token = session.get("token")
+    role = session.get("role")
+    if not token:
+        return redirect(url_for("login"))
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    try:
+        response = requests.post(api_url, json=form_data, headers=headers)
+        response_data = response.json()
+
+        if response.status_code == 201:
+            flash(f"User {form_data['full_name']} added successfully!", "success")
+        elif response.status_code == 409:
+            flash(f"Error: {response_data.get('error', 'User already exists.')}", "error")
+        elif response.status_code == 400:
+            flash(f"Error: {response_data.get('error', 'Invalid data provided.')}", "error")
+        else:
+            flash(f"Failed to add user. API returned status {response.status_code}.", "error")
+
+    except requests.exceptions.RequestException as e:
+        flash(f"An error occurred while contacting the API: {str(e)}", "error")
+
+    return redirect(url_for("admin_users"))
+
+@app.route('/admin/users/delete', methods=["POST"])
+def handle_delete_user_admin():
+    """
+    Handles the form submission from the admin users page to delete a user.
+    Makes an API call to the backend.
+    """
+    user_id_str = request.form.get('user_id') # Gets the ID from the select dropdown
+
+    if not user_id_str:
+        flash("Error: No user selected for deletion.", "error")
+        return redirect(url_for("admin_users")) # Redirect back to the users list page
+
+    try:
+        user_id = int(user_id_str) # Ensure it's an integer
+    except ValueError:
+        flash("Error: Invalid user ID format.", "error")
+        return redirect(url_for("admin_users"))
+    
+    api_url = f"{API_URL}/admin/users/delete"
+    token = session.get("token")
+    role = session.get("role")
+    if not token:
+        return redirect(url_for("login"))
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Prepare the JSON payload containing the user_id
+    json_payload = {
+        "user_id": user_id
+    }
+
+    try:
+        # Make the POST request to the backend API
+        response = requests.post(api_url, json=json_payload, headers=headers)
+        print(response)
+
+        # Check the response status code from the API
+        if response.status_code == 200:
+            # Assuming the API returns 200 on successful deletion
+            flash("User deleted successfully!", "success")
+        elif response.status_code == 404:
+            # Handle user not found error from the API
+            api_error = response.json().get('error', 'User not found.')
+            flash(f"Error: {api_error}", "error")
+        elif response.status_code == 403:
+            # Handle permission error (e.g., trying to delete an admin) from the API
+            api_error = response.json().get('error', 'Cannot delete user.')
+            flash(f"Error: {api_error}", "error")
+        else:
+            # Handle other potential errors from the API
+            # Attempt to get error message from response body
+            try:
+                api_error_detail = response.json().get('error', 'Unknown error from API.')
+            except ValueError: # If response is not JSON
+                api_error_detail = f"Non-JSON response: {response.text[:100]}..." # Log first 100 chars
+            flash(f"Failed to delete user. API Error: {api_error_detail}", "error")
+
+    except requests.exceptions.RequestException as e:
+        # Handle potential network errors during the API call
+        flash(f"An error occurred while contacting the API: {str(e)}", "error")
+
+    # Redirect back to the users list page after attempting the deletion
+    return redirect(url_for("admin_users"))
+
+
+
 @app.route("/dashboard")
 def dashboard():
     token = session.get("token")
@@ -38,13 +165,7 @@ def dashboard():
 
     headers = {"Authorization": f"Bearer {token}"}
 
-    if role == "admin":
-        users = requests.get(API_URL + "/admin/users", headers=headers).json()
-        businesses = requests.get(API_URL + "/admin/businesses", headers=headers).json()
-        transactions = requests.get(API_URL + "/admin/transactions", headers=headers).json()
-        return render_template("dashboard_admin.html", users=users, businesses=businesses, transactions=transactions)
-
-    elif role == "business":
+    if role == "business":
         memberships = requests.get(API_URL + "/business/memberships", headers=headers).json()
         transactions = requests.get(API_URL + "/business/transactions", headers=headers).json()
         return render_template("dashboard_business.html", memberships=memberships, transactions=transactions)

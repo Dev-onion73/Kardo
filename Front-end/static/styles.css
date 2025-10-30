@@ -1,0 +1,56 @@
+/* body{
+    background-image: url('/static/images/bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+.main_cont{
+    margin: auto !important;
+    padding: 4% !important;
+    padding-top: 15vh !important;
+} */
+
+.blur{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(2px);
+    z-index: -1;
+}
+
+form{
+    width:auto;
+    padding-right: 20px;
+    padding-left: 20px;
+    /* padding-bottom: 10%; */
+    min-width: 40vh;
+}
+
+.submit-btn {
+    background-color: #3b4f61 !important; 
+    color: white !important;
+}
+
+summary {
+    font-size: 18px;
+    font-weight: bold;
+    color: #3b4f61;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    outline: none;
+}
+
+.response{
+    font-weight: bold !important;
+    margin: auto !important;
+}
+
+.quest-btn{
+    background-color: white !important;
+    color: black !important;
+}
