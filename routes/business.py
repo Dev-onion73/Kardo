@@ -16,6 +16,13 @@ def business_required(fn):
         return fn(*args, **kwargs)
     return wrapper
 
+@business_bp.route("/users", methods=["GET"])
+def get_email():
+    users = User.query.filter(User.role != "admin").all()
+    return jsonify([{
+        "email": u.email,
+    } for u in users]), 200
+
 @business_bp.route("/memberships", methods=["GET"])
 @business_required
 def view_memberships():

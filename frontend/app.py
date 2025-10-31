@@ -299,9 +299,10 @@ def dashboard():
     headers = {"Authorization": f"Bearer {token}"}
 
     if role == "business":
+        users = requests.get(API_URL + "/business/users", headers=headers).json()
         memberships = requests.get(API_URL + "/business/memberships", headers=headers).json()
         transactions = requests.get(API_URL + "/business/transactions", headers=headers).json()
-        return render_template("dashboard/business.html", memberships=memberships, transactions=transactions)
+        return render_template("dashboard/business.html",customers=users , memberships=memberships, transactions=transactions)
 
     elif role == "customer":
         memberships = requests.get(API_URL + "/customer/memberships", headers=headers).json()
@@ -312,6 +313,75 @@ def dashboard():
         flash("Invalid role")
         return redirect(url_for("login"))
 
+
+@app.route('/business/add_membership', methods=["POST"])
+def handle_add_membership():
+    """
+    Handles the form submission from the business dashboard to add a membership.
+    Makes an API call to the backend.
+    """
+    # Extract form data
+    form_data = {
+        "customer_email": request.form.get('customer_email', '').strip().lower(), # Ensure lowercase
+        "membership_tier": request.form.get('membership_tier', 'Standard').strip() # Default to 'Standard' if empty
+    }
+
+    # Validate required field
+    if not form_data["customer_email"]:
+        flash("Input Error: Customer email is required.", "info")
+        return redirect(url_for("dashboard")) # Redirect back to the business dashboard
+
+    # Prepare the API call
+    # Adjust the API URL if your backend API route is different, e.g., /api/business/add_membership
+    api_url = f"{API_URL}/business/memberships" # Use the API endpoint that handles POST for adding membership
+    token = session.get("token") # Assumes token is stored in session
+    # role = session.get("role") # Not strictly needed for the API call itself, but might be used for local checks
+    if not token:
+        return redirect(url_for("login"))
+
+    headers = {
+        'Content-Type': 'application/json',
+        "Authorization": f"Bearer {token}" # Include the authorization token
+    }
+
+    # Prepare the JSON payload containing the membership data
+    json_payload = form_data
+
+    try:
+        # Make the POST request to the backend API
+        response = requests.post(api_url, json=json_payload, headers=headers)
+
+        # Check the response status code from the API
+        if response.status_code == 201:
+            # Assuming the API returns 201 on successful creation
+            flash(f"Membership added successfully for {form_data['customer_email']}!", "success")
+        elif response.status_code == 409:
+            # Handle conflict error (e.g., membership already exists) from the API
+            api_error = response.json().get('error', 'Membership already exists.')
+            flash(f"Error: {api_error}", "error")
+        elif response.status_code == 404:
+            # Handle customer not found error from the API
+            api_error = response.json().get('error', 'Customer not found.')
+            flash(f"Error: {api_error}", "error")
+        elif response.status_code == 400:
+            # Handle bad request error (e.g., customer has no card) from the API
+            api_error = response.json().get('error', 'Invalid data provided.')
+            flash(f"Error: {api_error}", "error")
+        else:
+            # Handle other potential errors from the API
+            # Attempt to get error message from response body
+            try:
+                api_error_detail = response.json().get('error', 'Unknown error from API.')
+            except ValueError: # If response is not JSON
+                api_error_detail = f"Non-JSON response: {response.text[:100]}..." # Log first 100 chars
+            flash(f"Failed to add membership. API Error: {api_error_detail}", "error")
+
+    except requests.exceptions.RequestException as e:
+        # Handle potential network errors during the API call
+        flash(f"An error occurred while contacting the API: {str(e)}", "error")
+
+    # Redirect back to the business dashboard page after attempting the addition
+    return redirect(url_for("dashboard")) # Assumes 'dashboard' route renders the correct dashboard for the business user
 
 
 

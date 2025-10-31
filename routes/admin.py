@@ -29,6 +29,8 @@ def get_users():
         "role": u.role
     } for u in users]), 200
 
+
+
 @admin_bp.route("/users", methods=["POST"])
 @admin_required
 def add_user():
